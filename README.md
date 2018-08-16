@@ -193,12 +193,70 @@ image and error file go through a power law conversion the parameters for this c
             point[...]=(point/c)**(1/n)
             point[...]=point*(-1)
 ```
+**3.**
+
+the image and the error data are then converted from Mj/sr to Jy
+
+**4.**
+the region grow method is then called on the img data to create the extent of the source boundary and the source boundary is aslo applied to the error data. if the peak location is below the threshold value the method will return -111.111,-111.111 to indicate a non detection
+
+**5.**
+the  6 area calculation begins as follows
+
+```python
+########################
+        #   calculate surface brightness from eqn 
+        #
+        #       S = A-(Nsrc/Nsky)B
+        # 
+        #  where: A=sum(src),  B=sum(sky)
+        ########################
+        
+        
+        #residual sky per pixelbased on area 1 & 3 w/ error
+        skycount=(getncount(clip1)+getncount(clip3))
+        avgsky=(sky1+sky3)/skycount
+        
+        skyerror=numpy.ma.std(numpy.ma.concatenate((clip1,clip3),axis=0))
+        
+        #sum of pixel values minus residual sky
+        
+        
+        S= flux-(nsrc)*(avgsky)
+        
+        
+        #remove nans from error map for error caclualtion
+        
+        #area4=area4[~numpy.isnan(area4)]
+        #area5=area5[~numpy.isnan(area5)]
+        #area6=area6[~numpy.isnan(area6)]
+        
+        
+        
+        skyerror=numpy.nanstd(numpy.concatenate((area1,area3),axis=0))
+        skycount=(getncount(area1)+getncount(area3))
+        
+        
+        
+        firsterr=errsourcesumsq
+        
+        seconderr=(float(nsrc)/float(skycount))*(numpy.nansum(area4*area4)+numpy.nansum(area6*area6))
+        
+        
+        thirderr=(float(nsrc*skyerror*skyerror))
+        
+        fourtherr=(float(nsrc*nsrc)*skyerror*skyerror)/float(skycount)
+        
+        
+        sberror=numpy.sqrt(abs(firsterr-seconderr+thirderr+fourtherr))
+        
+        
+    
+        return S,sberror
+
+```
 
 
-
-## Built With
-
-* [Beautifulsoup](https://www.crummy.com/software/BeautifulSoup/) 
 
 
 ## Authors
